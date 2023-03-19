@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_home">
+    app:startDestination="@+id/nav_expenses">
 
     <fragment
         android:id="@+id/nav_home"
@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.wsti.expensemanager.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/nav_expenses"
+        android:name="com.wsti.expensemanager.ui.expenses.ExpensesFragment"
+        android:label="@string/menu_expenses"
+        tools:layout="@layout/fragment_expenses" />
 
     <fragment
         android:id="@+id/nav_slideshow"

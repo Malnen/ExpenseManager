@@ -12,12 +12,14 @@ import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
+import com.wsti.expensemanager.data.ExpenseDataSource;
+import com.wsti.expensemanager.data.ExpenseRepository;
 import com.wsti.expensemanager.data.UserDataSource;
 import com.wsti.expensemanager.data.UserRepository;
 import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.databinding.ActivityMainBinding;
+import com.wsti.expensemanager.ui.expense.ExpenseActivity;
 import com.wsti.expensemanager.ui.login.LoginActivity;
 
 import androidx.navigation.NavController;
@@ -35,29 +37,23 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
-    private UserRepository repository;
+    private UserRepository userRepository;
+    private ExpenseRepository expenseRepository;
     private User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRepository();
+        setRepositories();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         DrawerLayout root = binding.getRoot();
         setContentView(root);
         setSupportActionBar(binding.appBarMain.toolbar);
-        binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow, R.id.nav_logout)
+                R.id.nav_expenses, R.id.nav_home, R.id.nav_slideshow, R.id.nav_logout)
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -80,13 +76,14 @@ public class MainActivity extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, mAppBarConfiguration) || super.onSupportNavigateUp();
     }
 
-    private void setRepository() {
+    private void setRepositories() {
         Context context = getApplicationContext();
-        repository = UserRepository.getInstance(new UserDataSource(context));
+        userRepository = UserRepository.getInstance(new UserDataSource(context));
+        expenseRepository = ExpenseRepository.getInstance(new ExpenseDataSource(context));
     }
 
     private void setUser() {
-        user = repository.getUser();
+        user = userRepository.getUser();
     }
 
     private void setUserData() {
@@ -121,19 +118,20 @@ public class MainActivity extends AppCompatActivity {
         displayName.setText(email);
     }
 
-    private void setLogoutAction(){
+    private void setLogoutAction() {
         NavigationView navigationView = findViewById(R.id.nav_view);
         Menu menu = navigationView.getMenu();
         MenuItem logoutMenuItem = menu.findItem(R.id.nav_logout);
         logoutMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                repository.logout();
+                expenseRepository.forgetExpenses();
+                userRepository.logout();
                 Context applicationContext = getApplicationContext();
                 Intent intent = new Intent(applicationContext, LoginActivity.class);
                 startActivity(intent);
                 finish();
-                
+
                 return true;
             }
         });
