@@ -43,9 +43,6 @@ public class ExpensesFragment extends Fragment {
         List<ExpenseRecord> expenses = expensesData.getValue();
         Context context = getContext();
         ListView listView = root.findViewById(R.id.expenses_list_view);
-        adapter = new ExpenseAdapter(context, expenses);
-
-        listView.setAdapter(adapter);
         launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
                     @Override
@@ -53,6 +50,9 @@ public class ExpensesFragment extends Fragment {
                         adapter.notifyDataSetChanged();
                     }
                 });
+
+        adapter = new ExpenseAdapter(context, expenses, launcher);
+        listView.setAdapter(adapter);
         setFabClick(root);
 
         return root;

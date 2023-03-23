@@ -27,14 +27,25 @@ public class ExpenseDataSource {
 
     public ExpenseRecord saveExpenseRecord(String expenseName, User user) {
         ExpenseRecord record = new ExpenseRecord(expenseName);
-        saveExpense(record, user);
+        return saveExpenseRecord(record, user);
+    }
 
+    public ExpenseRecord saveExpenseRecord(ExpenseRecord record, User user) {
+        saveExpense(record, user);
         return record;
     }
 
     public List<ExpenseRecord> getAllExpensesOfUser(User user) {
         Map<User, List<ExpenseRecord>> expenses = getAllExpenses();
         return expenses.getOrDefault(user, new ArrayList<>());
+    }
+
+    public void deleteExpense(User user, ExpenseRecord record) {
+        Map<User, List<ExpenseRecord>> expenses = getAllExpenses();
+        List<ExpenseRecord> userExpenses = expenses.get(user);
+        userExpenses.removeIf(userRecord -> hasSameGuid(record, userRecord));
+        expenses.put(user, userExpenses);
+        saveExpenses(expenses);
     }
 
     private void saveExpense(ExpenseRecord record, User user) {
@@ -48,6 +59,10 @@ public class ExpenseDataSource {
         }
 
         expenses.put(user, userExpenses);
+        saveExpenses(expenses);
+    }
+
+    private void saveExpenses(Map<User, List<ExpenseRecord>> expenses) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         Type type = new TypeToken<Map<User, List<ExpenseRecord>>>() {

@@ -1,6 +1,7 @@
 package com.wsti.expensemanager.ui.expense;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -12,10 +13,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.wsti.expensemanager.R;
 import com.wsti.expensemanager.data.ExpenseRepository;
 import com.wsti.expensemanager.data.UserRepository;
+import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
 
 public class ExpenseActivity extends AppCompatActivity {
     private ExpenseRepository expenseRepository;
+    private ExpenseRecord record;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +26,7 @@ public class ExpenseActivity extends AppCompatActivity {
         expenseRepository = ExpenseRepository.getInstance();
         setContentView(R.layout.activity_expense);
         setFabClick();
+        setExistingRecordIfCan();
     }
 
     private void setFabClick() {
@@ -30,15 +34,39 @@ public class ExpenseActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean isValid = validateExpenseName();
-                if (isValid) {
-                    String expenseNameValue = getExpenseName();
-                    User user = getUser();
-                    expenseRepository.saveExpenseRecord(expenseNameValue, user);
-                    finish();
-                }
+                onFabClick();
             }
         });
+    }
+
+    private void onFabClick() {
+        boolean isValid = validateExpenseName();
+        if (isValid) {
+            save();
+            finish();
+        }
+    }
+
+    private void save() {
+        if (record != null) {
+            saveExistingRecord();
+        } else {
+            saveNewRecord();
+        }
+    }
+
+    private void saveExistingRecord() {
+        User user = getUser();
+        String expenseName = getExpenseName();
+        String expenseGuid = record.getGuid();
+        ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseGuid);
+        expenseRepository.saveExpenseRecord(record, newRecord, user);
+    }
+
+    private void saveNewRecord() {
+        User user = getUser();
+        String expenseNameValue = getExpenseName();
+        expenseRepository.saveExpenseRecord(expenseNameValue, user);
     }
 
     private boolean validateExpenseName() {
@@ -67,6 +95,21 @@ public class ExpenseActivity extends AppCompatActivity {
     private User getUser() {
         UserRepository repository = UserRepository.getInstance();
         return repository.getUser();
+    }
+
+    private void setExistingRecordIfCan() {
+        Intent intent = getIntent();
+        String record = intent.getStringExtra("record");
+        if (record != null) {
+            setExistingRecord(record);
+        }
+    }
+
+    private void setExistingRecord(String json) {
+        record = ExpenseRecord.fromJson(json);
+        TextView expenseName = findViewById(R.id.expense_name);
+        String recordName = record.getName();
+        expenseName.setText(recordName);
     }
 
 }

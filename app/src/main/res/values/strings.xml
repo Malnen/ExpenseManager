@@ -26,6 +26,7 @@
     <string name="app_bar_title">Expense Manager</string>
     <string name="expense_name">Expense Name</string>
     <string name="submit">Submit</string>
+    <string name="expense_deleted">Expense "%s" deleted</string>
 
     <string name="menu_home">Home</string>
     <string name="menu_expenses">Expenses</string>

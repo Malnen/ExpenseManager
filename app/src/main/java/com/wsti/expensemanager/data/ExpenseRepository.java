@@ -48,6 +48,25 @@ public class ExpenseRepository {
         return record;
     }
 
+    public ExpenseRecord saveExpenseRecord(ExpenseRecord oldRecord, ExpenseRecord newRecord, User user) {
+        String oldRecordGuid = oldRecord.getGuid();
+        ExpenseRecord oldRecordWithGuid = expenses.stream()
+                .filter(record -> record.getGuid().equals(oldRecordGuid))
+                .findFirst()
+                .get();
+
+        int oldIndex = expenses.indexOf(oldRecordWithGuid);
+        expenses.add(oldIndex, newRecord);
+        expenses.remove(oldRecordWithGuid);
+
+        return dataSource.saveExpenseRecord(newRecord, user);
+    }
+
+    public void deleteExpense(ExpenseRecord record, User user) {
+        expenses.remove(record);
+        dataSource.deleteExpense(user, record);
+    }
+
     private List<ExpenseRecord> getAllExpensesOfUser(User user) {
         return dataSource.getAllExpensesOfUser(user);
     }
