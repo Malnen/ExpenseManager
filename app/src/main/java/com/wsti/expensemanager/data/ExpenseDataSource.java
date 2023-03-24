@@ -6,10 +6,12 @@ import android.content.SharedPreferences;
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +27,8 @@ public class ExpenseDataSource {
         this.context = context;
     }
 
-    public ExpenseRecord saveExpenseRecord(String expenseName, User user) {
-        ExpenseRecord record = new ExpenseRecord(expenseName);
+    public ExpenseRecord saveExpenseRecord(String expenseName, ExpenseType expenseType, BigDecimal currencyValue, User user) {
+        ExpenseRecord record = new ExpenseRecord(expenseName, expenseType, currencyValue);
         return saveExpenseRecord(record, user);
     }
 

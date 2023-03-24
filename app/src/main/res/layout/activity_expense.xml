@@ -37,4 +37,55 @@
         app:backgroundTint="#FF9800"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/income_outcome"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="168dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textInputLayout">
+
+        <RadioButton
+            android:id="@+id/income"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/income" />
+
+        <RadioButton
+            android:id="@+id/outcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/outcome" />
+
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/expense_type"
+        app:layout_constraintBottom_toTopOf="@+id/income_outcome"
+        app:layout_constraintStart_toStartOf="@+id/income_outcome" />
+
+    <EditText
+        android:id="@+id/expense_amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout"
+        tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/amount"
+        app:layout_constraintBottom_toTopOf="@+id/expense_amount"
+        app:layout_constraintStart_toStartOf="@+id/expense_amount" />
 </androidx.constraintlayout.widget.ConstraintLayout>

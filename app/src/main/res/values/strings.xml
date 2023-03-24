@@ -27,6 +27,11 @@
     <string name="expense_name">Expense Name</string>
     <string name="submit">Submit</string>
     <string name="expense_deleted">Expense "%s" deleted</string>
+    <string name="income">Income</string>
+    <string name="outcome">Outcome</string>
+    <string name="expense_type">Expense type</string>
+    <string name="amount">Amount</string>
+    <string name="item_amount">"%s" PLN</string>
 
     <string name="menu_home">Home</string>
     <string name="menu_expenses">Expenses</string>

@@ -10,11 +10,21 @@
         android:id="@+id/expense_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:text="Expense name"
         android:textSize="20sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/expense_item_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="45dp"
+        android:text="@string/item_amount"
+        android:textSize="10sp"
+        android:textStyle="normal" />
 
     <ImageButton
         android:id="@+id/edit_button"
@@ -36,5 +46,15 @@
         android:background="#00FFFFFF"
         android:src="@android:drawable/ic_menu_delete"
         tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+    <ImageView
+        android:id="@+id/expense_type_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        app:srcCompat="@drawable/ic_arrow_down" />
 
 </RelativeLayout>

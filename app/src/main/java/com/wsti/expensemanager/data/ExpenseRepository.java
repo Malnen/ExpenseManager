@@ -1,8 +1,10 @@
 package com.wsti.expensemanager.data;
 
+import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,8 +43,8 @@ public class ExpenseRepository {
         expenses = null;
     }
 
-    public ExpenseRecord saveExpenseRecord(String expenseName, User user) {
-        ExpenseRecord record = dataSource.saveExpenseRecord(expenseName, user);
+    public ExpenseRecord saveExpenseRecord(String expenseName, ExpenseType expenseType, BigDecimal currencyValue, User user) {
+        ExpenseRecord record = dataSource.saveExpenseRecord(expenseName, expenseType, currencyValue, user);
         expenses.add(record);
 
         return record;
