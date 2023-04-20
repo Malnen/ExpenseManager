@@ -1,12 +1,17 @@
 package com.wsti.expensemanager.data.model;
 
+import androidx.annotation.NonNull;
+
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.wsti.expensemanager.adapters.LocalDateTimeAdapter;
 import com.wsti.expensemanager.data.enums.ExpenseType;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class ExpenseRecord {
@@ -16,23 +21,26 @@ public class ExpenseRecord {
     private final ExpenseType expenseType;
     private final String guid;
     private final BigDecimal currencyValue;
+    private final LocalDateTime insertedDate;
 
     public ExpenseRecord(String name, ExpenseType expenseType, BigDecimal currencyValue) {
         this.name = name;
         this.expenseType = expenseType;
         this.currencyValue = currencyValue.setScale(CURRENCY_VALUE, RoundingMode.HALF_EVEN);
         guid = UUID.randomUUID().toString();
+        insertedDate = LocalDateTime.now();
     }
 
-    public ExpenseRecord(String name, ExpenseType expenseType, String guid, BigDecimal currencyValue) {
+    public ExpenseRecord(String name, ExpenseType expenseType, String guid, BigDecimal currencyValue, LocalDateTime insertedDate) {
         this.name = name;
         this.expenseType = expenseType;
         this.guid = guid;
         this.currencyValue = currencyValue.setScale(CURRENCY_VALUE, RoundingMode.HALF_EVEN);
+        this.insertedDate = insertedDate;
     }
 
     public static ExpenseRecord fromJson(String json) {
-        Gson gson = new Gson();
+        Gson gson = getGson();
         Type type = new TypeToken<ExpenseRecord>() {
         }.getType();
 
@@ -55,8 +63,18 @@ public class ExpenseRecord {
         return guid;
     }
 
+    public LocalDateTime getInsertedDate() {
+        return insertedDate;
+    }
+
     public String toJson() {
-        Gson gson = new Gson();
+        Gson gson = getGson();
         return gson.toJson(this);
+    }
+
+    private static Gson getGson() {
+        return new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                .create();
     }
 }

@@ -1,14 +1,11 @@
 package com.wsti.expensemanager.adapters;
 
-import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
-
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,6 +23,8 @@ import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.ui.expense.ExpenseActivity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
@@ -50,6 +49,12 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> {
         }
 
         ExpenseRecord record = expenseRecords.get(position);
+
+        TextView insertedDateView = listItem.findViewById(R.id.expense_item_inserted_date);
+        LocalDateTime date = record.getInsertedDate();
+        String insertedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        insertedDateView.setText(insertedDate);
+
         TextView name = listItem.findViewById(R.id.expense_name);
         String recordName = record.getName();
         name.setText(recordName);

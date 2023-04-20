@@ -33,8 +33,12 @@ public class UserDataSource {
             Set<Map.Entry<User, String>> entries = users.entrySet();
             for (Map.Entry<User, String> entry : entries) {
                 User user = entry.getKey();
-                String userPassword = entry.getValue();
-                String displayName = user.getLogin();
+                String userPassword = entry
+                        .getValue()
+                        .toLowerCase();
+                String displayName = user
+                        .getLogin()
+                        .toLowerCase();
                 if (Objects.equals(displayName, username) && Objects.equals(password, userPassword)) {
                     rememberUser(user);
                     return new Result.Success<>(user);
@@ -98,7 +102,7 @@ public class UserDataSource {
             return gson.fromJson(json, type);
         }
 
-        return null;
+        return new HashMap<>();
     }
 
     private void saveUser(Map<User, String> users) {

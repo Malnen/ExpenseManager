@@ -6,28 +6,28 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
 import com.wsti.expensemanager.data.ExpenseDataSource;
 import com.wsti.expensemanager.data.ExpenseRepository;
 import com.wsti.expensemanager.data.UserDataSource;
 import com.wsti.expensemanager.data.UserRepository;
+import com.wsti.expensemanager.data.enums.SortOption;
 import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.databinding.ActivityMainBinding;
-import com.wsti.expensemanager.ui.expense.ExpenseActivity;
 import com.wsti.expensemanager.ui.login.LoginActivity;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -136,4 +136,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
 }

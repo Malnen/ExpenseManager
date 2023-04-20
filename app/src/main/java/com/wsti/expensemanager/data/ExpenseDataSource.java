@@ -6,12 +6,14 @@ import android.content.SharedPreferences;
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.wsti.expensemanager.adapters.LocalDateTimeAdapter;
 import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,12 +69,12 @@ public class ExpenseDataSource {
     private void saveExpenses(Map<User, List<ExpenseRecord>> expenses) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        Type type = new TypeToken<Map<User, List<ExpenseRecord>>>() {
+        Type userExpenseType = new TypeToken<Map<User, List<ExpenseRecord>>>() {
         }.getType();
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(type, new UserExpenseRecordMapAdapter());
+        gsonBuilder.registerTypeAdapter(userExpenseType, new UserExpenseRecordMapAdapter());
         Gson gson = gsonBuilder.create();
-        String json = gson.toJson(expenses, type);
+        String json = gson.toJson(expenses, userExpenseType);
         editor.putString(EXPENSES, json);
         editor.apply();
     }
@@ -81,13 +83,13 @@ public class ExpenseDataSource {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS, Context.MODE_PRIVATE);
         String json = sharedPreferences.getString(EXPENSES, null);
         if (json != null) {
-            Type type = new TypeToken<Map<User, List<ExpenseRecord>>>() {
+            Type userExpenseType = new TypeToken<Map<User, List<ExpenseRecord>>>() {
             }.getType();
             GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(type, new UserExpenseRecordMapAdapter());
+            gsonBuilder.registerTypeAdapter(userExpenseType, new UserExpenseRecordMapAdapter());
             Gson gson = gsonBuilder.create();
 
-            return gson.fromJson(json, type);
+            return gson.fromJson(json, userExpenseType);
         }
 
         return new HashMap<>();

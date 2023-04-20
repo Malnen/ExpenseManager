@@ -21,6 +21,7 @@ import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.textWatcher.DecimalInputWatcher;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class ExpenseActivity extends AppCompatActivity {
     private ExpenseRepository expenseRepository;
@@ -70,8 +71,9 @@ public class ExpenseActivity extends AppCompatActivity {
         User user = getUser();
         String expenseName = getExpenseName();
         String expenseGuid = record.getGuid();
-        BigDecimal currencyValue = record.getCurrencyValue();
-        ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseType, expenseGuid, currencyValue);
+        BigDecimal currencyValue = getExpenseCurrencyValue();
+        LocalDateTime insertedDate = record.getInsertedDate();
+        ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseType, expenseGuid, currencyValue, insertedDate);
         expenseRepository.saveExpenseRecord(record, newRecord, user);
     }
 

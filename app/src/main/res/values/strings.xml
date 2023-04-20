@@ -30,6 +30,7 @@
     <string name="income">Income</string>
     <string name="outcome">Outcome</string>
     <string name="expense_type">Expense type</string>
+    <string name="expense_inserted_date">Inserted date</string>
     <string name="amount">Amount</string>
     <string name="item_amount">"%s" PLN</string>
 
@@ -39,4 +40,9 @@
     <string name="menu_logout">Logout</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="expense_name_label">Name</string>
+    <string name="sort_type_label">Type</string>
+    <string name="expense_amount_label">Amount</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
 </resources>
