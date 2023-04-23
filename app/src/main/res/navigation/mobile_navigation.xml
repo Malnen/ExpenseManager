@@ -16,10 +16,4 @@
         android:name="com.wsti.expensemanager.ui.expenses.ExpensesFragment"
         android:label="@string/menu_expenses"
         tools:layout="@layout/fragment_expenses" />
-
-    <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.wsti.expensemanager.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
 </navigation>

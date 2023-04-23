@@ -1,9 +1,11 @@
 package com.wsti.expensemanager.ui.expense;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.wsti.expensemanager.R;
 import com.wsti.expensemanager.data.ExpenseRepository;
 import com.wsti.expensemanager.data.UserRepository;
@@ -21,7 +24,9 @@ import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.textWatcher.DecimalInputWatcher;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ExpenseActivity extends AppCompatActivity {
     private ExpenseRepository expenseRepository;
@@ -37,6 +42,20 @@ public class ExpenseActivity extends AppCompatActivity {
         setExpenseAmount();
         setExpenseTypeGroup();
         setExistingRecordIfCan();
+        setDate();
+    }
+
+    private LocalDateTime getDate() {
+        if (record == null) {
+            return LocalDateTime.now();
+        }
+
+        LocalDateTime localDateTime = record.getInsertedDate();
+        if (localDateTime == null) {
+            return LocalDateTime.now();
+        }
+
+        return localDateTime;
     }
 
     private void setFabClick() {
@@ -72,8 +91,8 @@ public class ExpenseActivity extends AppCompatActivity {
         String expenseName = getExpenseName();
         String expenseGuid = record.getGuid();
         BigDecimal currencyValue = getExpenseCurrencyValue();
-        LocalDateTime insertedDate = record.getInsertedDate();
-        ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseType, expenseGuid, currencyValue, insertedDate);
+        LocalDateTime date = getLocalDateTimeValue();
+        ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseType, expenseGuid, currencyValue, date);
         expenseRepository.saveExpenseRecord(record, newRecord, user);
     }
 
@@ -81,7 +100,8 @@ public class ExpenseActivity extends AppCompatActivity {
         User user = getUser();
         String expenseNameValue = getExpenseName();
         BigDecimal currencyValue = getExpenseCurrencyValue();
-        expenseRepository.saveExpenseRecord(expenseNameValue, expenseType, currencyValue, user);
+        LocalDateTime date = getLocalDateTimeValue();
+        expenseRepository.saveExpenseRecord(expenseNameValue, expenseType, currencyValue, user, date);
     }
 
     private boolean validateExpenseName() {
@@ -127,7 +147,7 @@ public class ExpenseActivity extends AppCompatActivity {
     }
 
     private BigDecimal getExpenseCurrencyValue() {
-        EditText currencyAmount = findViewById(R.id.expense_amount);
+        TextView currencyAmount = findViewById(R.id.expense_amount);
         CharSequence text = currencyAmount.getText();
         String value = text.toString();
         if (value.isEmpty()) {
@@ -135,6 +155,15 @@ public class ExpenseActivity extends AppCompatActivity {
         }
 
         return new BigDecimal(value);
+    }
+
+    private LocalDateTime getLocalDateTimeValue() {
+        TextInputEditText expenseInsertedDateEditText = findViewById(R.id.expense_inserted_date);
+        String dateString = expenseInsertedDateEditText.getText().toString();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate localDate = LocalDate.parse(dateString, formatter);
+
+        return localDate.atStartOfDay();
     }
 
     private User getUser() {
@@ -163,7 +192,7 @@ public class ExpenseActivity extends AppCompatActivity {
             expenseTypeGroup.check(expenseTypeIndex);
         }
 
-        EditText editText = findViewById(R.id.expense_amount);
+        TextView editText = findViewById(R.id.expense_amount);
         BigDecimal currencyValue = record.getCurrencyValue();
         if (currencyValue != null) {
             String text = currencyValue.toString();
@@ -206,6 +235,40 @@ public class ExpenseActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void setDate() {
+        TextInputEditText expenseInsertedDateEditText = findViewById(R.id.expense_inserted_date);
+        expenseInsertedDateEditText.setFocusable(false);
+        LocalDateTime date = getDate();
+        int year = date.getYear();
+        int month = date.getMonthValue() - 1;
+        int day = date.getDayOfMonth();
+        setDateValue(year, month, day);
+
+        expenseInsertedDateEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LocalDateTime date = getDate();
+                int year = date.getYear();
+                int month = date.getMonthValue() - 1;
+                int day = date.getDayOfMonth();
+
+                DatePickerDialog datePickerDialog = new DatePickerDialog(ExpenseActivity.this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
+                        setDateValue(selectedYear, selectedMonth, selectedDay);
+                    }
+                }, year, month, day);
+                datePickerDialog.show();
+            }
+        });
+    }
+
+    private void setDateValue(int selectedYear, int selectedMonth, int selectedDay) {
+        TextInputEditText expenseInsertedDateEditText = findViewById(R.id.expense_inserted_date);
+        String formattedDate = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear);
+        expenseInsertedDateEditText.setText(formattedDate);
     }
 
 }

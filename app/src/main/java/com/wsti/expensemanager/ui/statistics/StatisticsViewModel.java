@@ -1,6 +1,5 @@
 package com.wsti.expensemanager.ui.statistics;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 

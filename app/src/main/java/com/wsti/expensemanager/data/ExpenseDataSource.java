@@ -29,8 +29,14 @@ public class ExpenseDataSource {
         this.context = context;
     }
 
-    public ExpenseRecord saveExpenseRecord(String expenseName, ExpenseType expenseType, BigDecimal currencyValue, User user) {
-        ExpenseRecord record = new ExpenseRecord(expenseName, expenseType, currencyValue);
+    public ExpenseRecord saveExpenseRecord(
+            String expenseName,
+            ExpenseType expenseType,
+            BigDecimal currencyValue,
+            User user,
+            LocalDateTime date
+    ) {
+        ExpenseRecord record = new ExpenseRecord(expenseName, expenseType, currencyValue, date);
         return saveExpenseRecord(record, user);
     }
 

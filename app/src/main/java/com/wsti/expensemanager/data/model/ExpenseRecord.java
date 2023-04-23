@@ -19,24 +19,35 @@ public class ExpenseRecord {
 
     private final String name;
     private final ExpenseType expenseType;
-    private final String guid;
     private final BigDecimal currencyValue;
     private final LocalDateTime insertedDate;
+    private final String guid;
 
-    public ExpenseRecord(String name, ExpenseType expenseType, BigDecimal currencyValue) {
+    public ExpenseRecord(
+            String name,
+            ExpenseType expenseType,
+            BigDecimal currencyValue,
+            LocalDateTime insertedDate
+    ) {
         this.name = name;
         this.expenseType = expenseType;
-        this.currencyValue = currencyValue.setScale(CURRENCY_VALUE, RoundingMode.HALF_EVEN);
-        guid = UUID.randomUUID().toString();
-        insertedDate = LocalDateTime.now();
-    }
-
-    public ExpenseRecord(String name, ExpenseType expenseType, String guid, BigDecimal currencyValue, LocalDateTime insertedDate) {
-        this.name = name;
-        this.expenseType = expenseType;
-        this.guid = guid;
         this.currencyValue = currencyValue.setScale(CURRENCY_VALUE, RoundingMode.HALF_EVEN);
         this.insertedDate = insertedDate;
+        guid = UUID.randomUUID().toString();
+    }
+
+    public ExpenseRecord(
+            String name,
+            ExpenseType expenseType,
+            String guid,
+            BigDecimal currencyValue,
+            LocalDateTime insertedDate
+    ) {
+        this.name = name;
+        this.expenseType = expenseType;
+        this.currencyValue = currencyValue.setScale(CURRENCY_VALUE, RoundingMode.HALF_EVEN);
+        this.insertedDate = insertedDate;
+        this.guid = guid;
     }
 
     public static ExpenseRecord fromJson(String json) {
