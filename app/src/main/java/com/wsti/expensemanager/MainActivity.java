@@ -24,7 +24,6 @@ import com.wsti.expensemanager.data.ExpenseDataSource;
 import com.wsti.expensemanager.data.ExpenseRepository;
 import com.wsti.expensemanager.data.UserDataSource;
 import com.wsti.expensemanager.data.UserRepository;
-import com.wsti.expensemanager.data.enums.SortOption;
 import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.databinding.ActivityMainBinding;
 import com.wsti.expensemanager.ui.login.LoginActivity;
@@ -53,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_expenses, R.id.nav_home, R.id.nav_slideshow, R.id.nav_logout)
+                R.id.nav_expenses, R.id.nav_statistics, R.id.nav_slideshow, R.id.nav_logout)
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);

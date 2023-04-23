@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.wsti.expensemanager.adapters.LocalDateTimeAdapter;
 import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
@@ -18,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class ExpenseDataSource {
     private static final String MY_PREFS = "my_prefs";
@@ -89,10 +89,38 @@ public class ExpenseDataSource {
             gsonBuilder.registerTypeAdapter(userExpenseType, new UserExpenseRecordMapAdapter());
             Gson gson = gsonBuilder.create();
 
-            return gson.fromJson(json, userExpenseType);
+            //  return gson.fromJson(json, userExpenseType);
+            List<ExpenseRecord> expenses = getRandomExpenses();
+            Map<User, List<ExpenseRecord>> result = gson.fromJson(json, userExpenseType);
+            Map.Entry<User, List<ExpenseRecord>> first = result.entrySet()
+                    .stream()
+                    .findFirst()
+                    .get();
+            first.setValue(expenses);
+
+            return result;
         }
 
         return new HashMap<>();
+    }
+
+    private List<ExpenseRecord> getRandomExpenses() {
+        List<ExpenseRecord> expenses = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            BigDecimal value = new BigDecimal((Math.random() * 500) + 100);
+            ExpenseType type = ExpenseType.values()[(int) (Math.random() * ExpenseType.values().length)];
+            LocalDateTime date = LocalDateTime.now().plusDays((int) (Math.random() * 90));
+            ExpenseRecord record = new ExpenseRecord(
+                    "New expense " + (i + 1),
+                    type,
+                    UUID.randomUUID().toString(),
+                    value, date
+            );
+
+            expenses.add(record);
+        }
+
+        return expenses;
     }
 
     private ExpenseRecord getExistingExpense(ExpenseRecord record, List<ExpenseRecord> userExpenses) {
