@@ -3,9 +3,13 @@ package com.wsti.expensemanager.ui.expenses;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -38,7 +42,7 @@ public class ExpensesFragment extends Fragment {
     private ExpenseAdapter adapter;
     private FragmentExpensesBinding binding;
     private ActivityResultLauncher<Intent> launcher;
-    private boolean asc = true;
+    private boolean asc = false;
     private SortOption sortOption = SortOption.INSERTED_DATE;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -60,6 +64,7 @@ public class ExpensesFragment extends Fragment {
         sort();
         listView.setAdapter(adapter);
         setFabClick(root);
+        setFilterField(root);
         setSortButton();
 
         return root;
@@ -89,6 +94,31 @@ public class ExpensesFragment extends Fragment {
                 launcher.launch(intent);
             }
         });
+    }
+
+    private void setFilterField(View root) {
+        EditText filterEditText = root.findViewById(R.id.filter_text_field);
+        filterEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterExpenses(s);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+    }
+
+    private void filterExpenses(CharSequence s) {
+        Filter filter = adapter.getFilter();
+        filter.filter(s);
+        sort();
     }
 
     private void setSortButton() {
@@ -139,25 +169,6 @@ public class ExpensesFragment extends Fragment {
     }
 
     private void sort() {
-        adapter.sort(new Comparator<ExpenseRecord>() {
-            @Override
-            public int compare(ExpenseRecord firstRecord, ExpenseRecord secondRecord) {
-                ExpenseRecord firstToCompare = asc ? secondRecord : firstRecord;
-                ExpenseRecord secondToCompare = asc ? firstRecord : secondRecord;
-
-                switch (sortOption) {
-                    case NAME:
-                        return firstToCompare.getName().compareTo(secondToCompare.getName());
-                    case TYPE:
-                        return firstToCompare.getExpenseType().compareTo(secondToCompare.getExpenseType());
-                    case AMOUNT:
-                        return firstToCompare.getCurrencyValue().compareTo(secondToCompare.getCurrencyValue());
-                    case INSERTED_DATE:
-                        return firstToCompare.getInsertedDate().compareTo(secondToCompare.getInsertedDate());
-                    default:
-                        return 0;
-                }
-            }
-        });
+        adapter.sort(asc, sortOption);
     }
 }

@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,6 +20,7 @@ import com.wsti.expensemanager.R;
 import com.wsti.expensemanager.data.ExpenseRepository;
 import com.wsti.expensemanager.data.UserRepository;
 import com.wsti.expensemanager.data.enums.ExpenseType;
+import com.wsti.expensemanager.data.enums.SortOption;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.ui.expense.ExpenseActivity;
@@ -25,20 +28,32 @@ import com.wsti.expensemanager.ui.expense.ExpenseActivity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
-public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> {
+public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filterable {
 
     private final ActivityResultLauncher<Intent> launcher;
     private final Context context;
+    private final ExpenseRepository expenseRepository;
     private final List<ExpenseRecord> expenseRecords;
+    private boolean asc = true;
+    private SortOption sortOption = SortOption.INSERTED_DATE;
 
     public ExpenseAdapter(Context context, List<ExpenseRecord> expenseRecords, ActivityResultLauncher<Intent> launcher) {
         super(context, 0, expenseRecords);
         this.launcher = launcher;
         this.context = context;
-        this.expenseRecords = expenseRecords;
+        this.expenseRepository = ExpenseRepository.getInstance();
+        this.expenseRecords = new ArrayList<>(expenseRecords);
+    }
+
+    @Override
+    public int getCount() {
+        return expenseRecords.size();
     }
 
     @Override
@@ -77,6 +92,71 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> {
         });
 
         return listItem;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                List<ExpenseRecord> originalExpenses = expenseRepository.getExpenses();
+                FilterResults filterResults = new FilterResults();
+                List<ExpenseRecord> filteredExpenseRecords = new ArrayList<>();
+                if (constraint == null || constraint.length() == 0) {
+                    filteredExpenseRecords.addAll(originalExpenses);
+                } else {
+                    setFilter(constraint, filteredExpenseRecords, originalExpenses);
+                }
+                filterResults.values = filteredExpenseRecords;
+                filterResults.count = filteredExpenseRecords.size();
+
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                expenseRecords.clear();
+                expenseRecords.addAll((List<ExpenseRecord>) results.values);
+               // sort(asc, sortOption);
+                notifyDataSetChanged();
+            }
+        };
+    }
+
+    public void sort(boolean asc, SortOption sortOption) {
+        this.asc = asc;
+        this.sortOption = sortOption;
+        sort(new Comparator<ExpenseRecord>() {
+            @Override
+            public int compare(ExpenseRecord firstRecord, ExpenseRecord secondRecord) {
+                ExpenseRecord firstToCompare = asc ? secondRecord : firstRecord;
+                ExpenseRecord secondToCompare = asc ? firstRecord : secondRecord;
+
+                switch (sortOption) {
+                    case NAME:
+                        return firstToCompare.getName().compareTo(secondToCompare.getName());
+                    case TYPE:
+                        return firstToCompare.getExpenseType().compareTo(secondToCompare.getExpenseType());
+                    case AMOUNT:
+                        return firstToCompare.getCurrencyValue().compareTo(secondToCompare.getCurrencyValue());
+                    case INSERTED_DATE:
+                        return firstToCompare.getInsertedDate().compareTo(secondToCompare.getInsertedDate());
+                    default:
+                        return 0;
+                }
+            }
+        });
+    }
+
+    private void setFilter(CharSequence constraint, List<ExpenseRecord> filteredExpenseRecords, List<ExpenseRecord> originalExpenses) {
+        String filterPattern = constraint.toString().toLowerCase().trim();
+        for (ExpenseRecord expenseRecord : originalExpenses) {
+            String rawName = expenseRecord.getName();
+            String name2 = rawName.toLowerCase();
+            if (name2.contains(filterPattern)) {
+                filteredExpenseRecords.add(expenseRecord);
+            }
+        }
     }
 
     private void setAmountText(ExpenseRecord record, Context applicationContext, MaterialTextView amount) {

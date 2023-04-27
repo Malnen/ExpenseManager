@@ -115,7 +115,7 @@ public class ExpenseDataSource {
         for (int i = 0; i < 20; i++) {
             BigDecimal value = new BigDecimal((Math.random() * 500) + 100);
             ExpenseType type = ExpenseType.values()[(int) (Math.random() * ExpenseType.values().length)];
-            LocalDateTime date = LocalDateTime.now().plusDays((int) (Math.random() * 90));
+            LocalDateTime date = LocalDateTime.now().plusDays(i);
             ExpenseRecord record = new ExpenseRecord(
                     "New expense " + (i + 1),
                     type,

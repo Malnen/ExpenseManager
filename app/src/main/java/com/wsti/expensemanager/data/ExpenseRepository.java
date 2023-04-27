@@ -32,6 +32,10 @@ public class ExpenseRepository {
         return instance;
     }
 
+    public List<ExpenseRecord> getExpenses() {
+        return expenses;
+    }
+
     public List<ExpenseRecord> getExpenses(User user) {
         if (expenses == null) {
             expenses = getAllExpensesOfUser(user);
