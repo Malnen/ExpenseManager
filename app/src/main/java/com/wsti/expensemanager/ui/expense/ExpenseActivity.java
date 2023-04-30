@@ -1,14 +1,17 @@
 package com.wsti.expensemanager.ui.expense;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -160,10 +163,9 @@ public class ExpenseActivity extends AppCompatActivity {
     private LocalDateTime getLocalDateTimeValue() {
         TextInputEditText expenseInsertedDateEditText = findViewById(R.id.expense_inserted_date);
         String dateString = expenseInsertedDateEditText.getText().toString();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate localDate = LocalDate.parse(dateString, formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-        return localDate.atStartOfDay();
+        return LocalDateTime.parse(dateString, formatter);
     }
 
     private User getUser() {
@@ -244,7 +246,9 @@ public class ExpenseActivity extends AppCompatActivity {
         int year = date.getYear();
         int month = date.getMonthValue() - 1;
         int day = date.getDayOfMonth();
-        setDateValue(year, month, day);
+        int hour = date.getHour();
+        int minute = date.getMinute();
+        setDateValue(year, month, day, hour, minute);
 
         expenseInsertedDateEditText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -257,17 +261,33 @@ public class ExpenseActivity extends AppCompatActivity {
                 DatePickerDialog datePickerDialog = new DatePickerDialog(ExpenseActivity.this, new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-                        setDateValue(selectedYear, selectedMonth, selectedDay);
                     }
                 }, year, month, day);
                 datePickerDialog.show();
+                datePickerDialog.setOnDateSetListener((datePicker, selectedYear, selectedMonth, selectedDay) -> {
+                    int hour = date.getHour();
+                    int minute = date.getMinute();
+                    TimePickerDialog timePickerDialog = new TimePickerDialog(
+                            ExpenseActivity.this,
+                            new TimePickerDialog.OnTimeSetListener() {
+                                @Override
+                                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                    setDateValue(year, month, day, hourOfDay, minute);
+                                }
+                            },
+                            hour,
+                            minute,
+                            true
+                    );
+                    timePickerDialog.show();
+                });
             }
         });
     }
 
-    private void setDateValue(int selectedYear, int selectedMonth, int selectedDay) {
+    private void setDateValue(int selectedYear, int selectedMonth, int selectedDay, int hourOfDay, int minute) {
         TextInputEditText expenseInsertedDateEditText = findViewById(R.id.expense_inserted_date);
-        String formattedDate = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear);
+        String formattedDate = String.format("%02d/%02d/%04d %02d:%02d", selectedDay, selectedMonth + 1, selectedYear, hourOfDay, minute);
         expenseInsertedDateEditText.setText(formattedDate);
     }
 

@@ -39,7 +39,8 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
     private final ActivityResultLauncher<Intent> launcher;
     private final Context context;
     private final ExpenseRepository expenseRepository;
-    private final List<ExpenseRecord> expenseRecords;
+
+    private List<ExpenseRecord> expenseRecords;
     private boolean asc = true;
     private SortOption sortOption = SortOption.INSERTED_DATE;
 
@@ -48,6 +49,11 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
         this.launcher = launcher;
         this.context = context;
         this.expenseRepository = ExpenseRepository.getInstance();
+        this.expenseRecords = new ArrayList<>(expenseRecords);
+    }
+
+    public void refresh() {
+        List<ExpenseRecord> expenseRecords = expenseRepository.getExpenses();
         this.expenseRecords = new ArrayList<>(expenseRecords);
     }
 
@@ -117,7 +123,6 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 expenseRecords.clear();
                 expenseRecords.addAll((List<ExpenseRecord>) results.values);
-               // sort(asc, sortOption);
                 notifyDataSetChanged();
             }
         };

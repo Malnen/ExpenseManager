@@ -169,6 +169,8 @@ public class ExpensesFragment extends Fragment {
     }
 
     private void sort() {
+        List<ExpenseRecord> freshRecords = getExpenses();
+        adapter.refresh();
         adapter.sort(asc, sortOption);
     }
 }
