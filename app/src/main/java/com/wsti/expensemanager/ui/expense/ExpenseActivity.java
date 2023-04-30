@@ -5,7 +5,6 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -18,16 +17,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.wsti.expensemanager.R;
 import com.wsti.expensemanager.data.ExpenseRepository;
 import com.wsti.expensemanager.data.UserRepository;
+import com.wsti.expensemanager.data.enums.ExpensePriority;
 import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.textWatcher.DecimalInputWatcher;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -35,6 +35,7 @@ public class ExpenseActivity extends AppCompatActivity {
     private ExpenseRepository expenseRepository;
     private ExpenseRecord record;
     private ExpenseType expenseType;
+    private ExpensePriority priority;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +45,10 @@ public class ExpenseActivity extends AppCompatActivity {
         setFabClick();
         setExpenseAmount();
         setExpenseTypeGroup();
+        setExpensePriorityGroup();
         setExistingRecordIfCan();
         setDate();
+        setReminderDate();
     }
 
     private LocalDateTime getDate() {
@@ -94,8 +97,9 @@ public class ExpenseActivity extends AppCompatActivity {
         String expenseName = getExpenseName();
         String expenseGuid = record.getGuid();
         BigDecimal currencyValue = getExpenseCurrencyValue();
-        LocalDateTime date = getLocalDateTimeValue();
-        ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseType, expenseGuid, currencyValue, date);
+        LocalDateTime date = getLocalDateTimeValue(R.id.expense_inserted_date);
+        LocalDateTime reminderDate = expenseType == ExpenseType.outcome ? getLocalDateTimeValue(R.id.expense_reminder_date) : null;
+        ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseType, expenseGuid, currencyValue, date, priority, reminderDate);
         expenseRepository.saveExpenseRecord(record, newRecord, user);
     }
 
@@ -103,8 +107,9 @@ public class ExpenseActivity extends AppCompatActivity {
         User user = getUser();
         String expenseNameValue = getExpenseName();
         BigDecimal currencyValue = getExpenseCurrencyValue();
-        LocalDateTime date = getLocalDateTimeValue();
-        expenseRepository.saveExpenseRecord(expenseNameValue, expenseType, currencyValue, user, date);
+        LocalDateTime date = getLocalDateTimeValue(R.id.expense_inserted_date);
+        LocalDateTime reminderDate = expenseType == ExpenseType.outcome ? getLocalDateTimeValue(R.id.expense_reminder_date) : null;
+        expenseRepository.saveExpenseRecord(expenseNameValue, expenseType, currencyValue, user, date, priority, reminderDate);
     }
 
     private boolean validateExpenseName() {
@@ -160,11 +165,14 @@ public class ExpenseActivity extends AppCompatActivity {
         return new BigDecimal(value);
     }
 
-    private LocalDateTime getLocalDateTimeValue() {
-        TextInputEditText expenseInsertedDateEditText = findViewById(R.id.expense_inserted_date);
+    private LocalDateTime getLocalDateTimeValue(int id) {
+        TextInputEditText expenseInsertedDateEditText = findViewById(id);
         String dateString = expenseInsertedDateEditText.getText().toString();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        if (dateString.isEmpty()) {
+            return null;
+        }
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         return LocalDateTime.parse(dateString, formatter);
     }
 
@@ -178,6 +186,9 @@ public class ExpenseActivity extends AppCompatActivity {
         String record = intent.getStringExtra("record");
         if (record != null) {
             setExistingRecord(record);
+        } else {
+            hidePriority();
+            hideReminderDate();
         }
     }
 
@@ -199,6 +210,17 @@ public class ExpenseActivity extends AppCompatActivity {
         if (currencyValue != null) {
             String text = currencyValue.toString();
             editText.setText(text);
+        }
+
+        priority = record.getPriority();
+        checkPriority();
+
+        if (expenseType == ExpenseType.outcome) {
+            showPriority();
+            showReminderDate();
+        } else {
+            hidePriority();
+            hideReminderDate();
         }
     }
 
@@ -229,11 +251,36 @@ public class ExpenseActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (checkedId == R.id.income) {
+                    hidePriority();
+                    hideReminderDate();
+                    priority = ExpensePriority.none;
                     expenseType = ExpenseType.income;
                 } else if (checkedId == R.id.outcome) {
+                    showPriority();
+                    showReminderDate();
+                    priority = ExpensePriority.normal;
                     expenseType = ExpenseType.outcome;
+                    checkPriority();
                 } else {
                     expenseType = null;
+                }
+            }
+        });
+    }
+
+    private void setExpensePriorityGroup() {
+        RadioGroup expensePriorityGroup = findViewById(R.id.priority);
+        expensePriorityGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == R.id.high) {
+                    priority = ExpensePriority.high;
+                } else if (checkedId == R.id.normal) {
+                    priority = ExpensePriority.normal;
+                } else if (checkedId == R.id.low) {
+                    priority = ExpensePriority.low;
+                } else {
+                    priority = ExpensePriority.none;
                 }
             }
         });
@@ -248,7 +295,7 @@ public class ExpenseActivity extends AppCompatActivity {
         int day = date.getDayOfMonth();
         int hour = date.getHour();
         int minute = date.getMinute();
-        setDateValue(year, month, day, hour, minute);
+        setDateValue(R.id.expense_inserted_date, year, month, day, hour, minute);
 
         expenseInsertedDateEditText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -272,7 +319,7 @@ public class ExpenseActivity extends AppCompatActivity {
                             new TimePickerDialog.OnTimeSetListener() {
                                 @Override
                                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                    setDateValue(year, month, day, hourOfDay, minute);
+                                    setDateValue(R.id.expense_inserted_date, year, month, day, hourOfDay, minute);
                                 }
                             },
                             hour,
@@ -285,10 +332,114 @@ public class ExpenseActivity extends AppCompatActivity {
         });
     }
 
-    private void setDateValue(int selectedYear, int selectedMonth, int selectedDay, int hourOfDay, int minute) {
-        TextInputEditText expenseInsertedDateEditText = findViewById(R.id.expense_inserted_date);
+    private void setDateValue(int id, int selectedYear, int selectedMonth, int selectedDay, int hourOfDay, int minute) {
+        TextInputEditText expenseInsertedDateEditText = findViewById(id);
         String formattedDate = String.format("%02d/%02d/%04d %02d:%02d", selectedDay, selectedMonth + 1, selectedYear, hourOfDay, minute);
         expenseInsertedDateEditText.setText(formattedDate);
     }
 
+    private void setReminderDate() {
+        TextInputEditText expenseInsertedDateEditText = findViewById(R.id.expense_reminder_date);
+        expenseInsertedDateEditText.setFocusable(false);
+        expenseInsertedDateEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LocalDateTime date = getDate();
+                int year = date.getYear();
+                int month = date.getMonthValue() - 1;
+                int day = date.getDayOfMonth();
+
+                DatePickerDialog datePickerDialog = new DatePickerDialog(ExpenseActivity.this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
+                    }
+                }, year, month, day);
+                datePickerDialog.show();
+                datePickerDialog.setOnDateSetListener((datePicker, selectedYear, selectedMonth, selectedDay) -> {
+                    int hour = date.getHour();
+                    int minute = date.getMinute();
+                    TimePickerDialog timePickerDialog = new TimePickerDialog(
+                            ExpenseActivity.this,
+                            new TimePickerDialog.OnTimeSetListener() {
+                                @Override
+                                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                    setDateValue(R.id.expense_reminder_date, year, month, day, hourOfDay, minute);
+                                }
+                            },
+                            hour,
+                            minute,
+                            true
+                    );
+                    timePickerDialog.show();
+                });
+            }
+        });
+
+        if (record == null) {
+            return;
+        }
+
+        LocalDateTime date = record.getReminderDate();
+        if (date != null) {
+            int year = date.getYear();
+            int month = date.getMonthValue() - 1;
+            int day = date.getDayOfMonth();
+            int hour = date.getHour();
+            int minute = date.getMinute();
+            setDateValue(R.id.expense_reminder_date, year, month, day, hour, minute);
+        }
+    }
+
+    private void hidePriority() {
+        RadioGroup expensePriorityGroup = findViewById(R.id.priority);
+        TextView priorityText = findViewById(R.id.priority_text);
+        priorityText.setVisibility(View.GONE);
+        expensePriorityGroup.setVisibility(View.GONE);
+    }
+
+    private void showPriority() {
+        RadioGroup expensePriorityGroup = findViewById(R.id.priority);
+        TextView priorityText = findViewById(R.id.priority_text);
+        priorityText.setVisibility(View.VISIBLE);
+        expensePriorityGroup.setVisibility(View.VISIBLE);
+    }
+
+    private void hideReminderDate() {
+        TextInputLayout reminderDate = findViewById(R.id.inserted_reminder_date_layout);
+        reminderDate.setVisibility(View.GONE);
+    }
+
+    private void showReminderDate() {
+        TextInputLayout reminderDate = findViewById(R.id.inserted_reminder_date_layout);
+        reminderDate.setVisibility(View.VISIBLE);
+    }
+
+    private void checkPriority() {
+        RadioGroup expensePriorityGroup = findViewById(R.id.priority);
+        int expensePriorityIndex = record != null ? getExpensePriorityIndex() : R.id.normal;
+        if (expensePriorityIndex >= 0) {
+            expensePriorityGroup.check(expensePriorityIndex);
+        }
+    }
+
+    private int getExpensePriorityIndex() {
+        ExpensePriority priority = record.getPriority();
+        boolean overridePriority = priority == ExpensePriority.none && expenseType == ExpenseType.outcome;
+        priority = overridePriority ?
+                ExpensePriority.normal : priority;
+        if (priority == null) {
+            return -1;
+        }
+
+        switch (priority) {
+            case high:
+                return R.id.high;
+            case normal:
+                return R.id.normal;
+            case low:
+                return R.id.low;
+            default:
+                return -1;
+        }
+    }
 }

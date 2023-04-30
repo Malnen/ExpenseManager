@@ -2,6 +2,7 @@ package com.wsti.expensemanager.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import com.google.android.material.textview.MaterialTextView;
 import com.wsti.expensemanager.R;
 import com.wsti.expensemanager.data.ExpenseRepository;
 import com.wsti.expensemanager.data.UserRepository;
+import com.wsti.expensemanager.data.enums.ExpensePriority;
 import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.enums.SortOption;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
@@ -29,7 +31,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -41,8 +42,6 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
     private final ExpenseRepository expenseRepository;
 
     private List<ExpenseRecord> expenseRecords;
-    private boolean asc = true;
-    private SortOption sortOption = SortOption.INSERTED_DATE;
 
     public ExpenseAdapter(Context context, List<ExpenseRecord> expenseRecords, ActivityResultLauncher<Intent> launcher) {
         super(context, 0, expenseRecords);
@@ -70,6 +69,17 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
         }
 
         ExpenseRecord record = expenseRecords.get(position);
+
+        TextView priorityLabel = listItem.findViewById(R.id.expense_item_priority_label);
+        TextView priorityView = listItem.findViewById(R.id.expense_item_priority);
+        ExpensePriority priority = record.getPriority();
+        int showPriority = priority == ExpensePriority.none ? View.GONE : View.VISIBLE;
+        priorityLabel.setVisibility(showPriority);
+        priorityView.setVisibility(showPriority);
+        String priorityName = priority.getName();
+        priorityView.setText(priorityName);
+        int priorityColor = getPriorityColor(priority);
+        priorityView.setTextColor(priorityColor);
 
         TextView insertedDateView = listItem.findViewById(R.id.expense_item_inserted_date);
         LocalDateTime date = record.getInsertedDate();
@@ -129,8 +139,6 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
     }
 
     public void sort(boolean asc, SortOption sortOption) {
-        this.asc = asc;
-        this.sortOption = sortOption;
         sort(new Comparator<ExpenseRecord>() {
             @Override
             public int compare(ExpenseRecord firstRecord, ExpenseRecord secondRecord) {
@@ -151,6 +159,19 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
                 }
             }
         });
+    }
+
+    private int getPriorityColor(ExpensePriority priority) {
+        switch (priority) {
+            case high:
+                return Color.RED;
+            case normal:
+                return Color.BLUE;
+            case low:
+                return Color.GREEN;
+            default:
+                return 0;
+        }
     }
 
     private void setFilter(CharSequence constraint, List<ExpenseRecord> filteredExpenseRecords, List<ExpenseRecord> originalExpenses) {

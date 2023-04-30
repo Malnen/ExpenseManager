@@ -1,5 +1,6 @@
 package com.wsti.expensemanager.data;
 
+import com.wsti.expensemanager.data.enums.ExpensePriority;
 import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
@@ -53,9 +54,11 @@ public class ExpenseRepository {
             ExpenseType expenseType,
             BigDecimal currencyValue,
             User user,
-            LocalDateTime date
+            LocalDateTime date,
+            ExpensePriority priority,
+            LocalDateTime reminderDate
     ) {
-        ExpenseRecord record = dataSource.saveExpenseRecord(expenseName, expenseType, currencyValue, user, date);
+        ExpenseRecord record = dataSource.saveExpenseRecord(expenseName, expenseType, currencyValue, user, date, priority, reminderDate);
         expenses.add(record);
 
         return record;

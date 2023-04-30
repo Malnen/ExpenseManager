@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.wsti.expensemanager.data.enums.ExpensePriority;
 import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
@@ -34,9 +35,11 @@ public class ExpenseDataSource {
             ExpenseType expenseType,
             BigDecimal currencyValue,
             User user,
-            LocalDateTime date
+            LocalDateTime date,
+            ExpensePriority priority,
+            LocalDateTime reminderDate
     ) {
-        ExpenseRecord record = new ExpenseRecord(expenseName, expenseType, currencyValue, date);
+        ExpenseRecord record = new ExpenseRecord(expenseName, expenseType, currencyValue, date, priority, reminderDate);
         return saveExpenseRecord(record, user);
     }
 
@@ -115,12 +118,17 @@ public class ExpenseDataSource {
         for (int i = 0; i < 20; i++) {
             BigDecimal value = new BigDecimal((Math.random() * 500) + 100);
             ExpenseType type = ExpenseType.values()[(int) (Math.random() * ExpenseType.values().length)];
+            ExpensePriority priority = type.equals(ExpenseType.outcome)
+                    ? ExpensePriority.values()[(int) (Math.random() * ExpensePriority.values().length)] : ExpensePriority.none;
             LocalDateTime date = LocalDateTime.now().plusDays(i);
             ExpenseRecord record = new ExpenseRecord(
                     "New expense " + (i + 1),
                     type,
                     UUID.randomUUID().toString(),
-                    value, date
+                    value,
+                    date,
+                    priority,
+                    null
             );
 
             expenses.add(record);
