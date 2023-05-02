@@ -1,5 +1,7 @@
 package com.wsti.expensemanager.ui.login;
 
+import android.app.AlarmManager;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import com.wsti.expensemanager.R;
 import com.wsti.expensemanager.data.Result;
 import com.wsti.expensemanager.data.model.User;
 import com.wsti.expensemanager.databinding.ActivityLoginBinding;
+import com.wsti.expensemanager.services.NotificationService;
 import com.wsti.expensemanager.ui.register.RegisterActivity;
 
 public class LoginActivity extends AppCompatActivity {
@@ -40,6 +43,9 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        AlarmManager alarmManager = getSystemService(AlarmManager.class);
+        NotificationService.init(notificationManager, alarmManager);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         init();
         setLoginViewListeners();
@@ -209,6 +215,9 @@ public class LoginActivity extends AppCompatActivity {
     private void startMainActivity() {
         Context applicationContext = getApplicationContext();
         Intent intent = new Intent(applicationContext, MainActivity.class);
+        Intent currentIntent = getIntent();
+        String guid = currentIntent.getStringExtra("guid");
+        intent.putExtra("guid", guid);
         startActivity(intent);
         finish();
     }

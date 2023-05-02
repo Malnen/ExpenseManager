@@ -22,6 +22,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -35,7 +36,10 @@ import com.wsti.expensemanager.databinding.FragmentExpensesBinding;
 import com.wsti.expensemanager.ui.expense.ExpenseActivity;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 
 public class ExpensesFragment extends Fragment {
@@ -66,6 +70,7 @@ public class ExpensesFragment extends Fragment {
         setFabClick(root);
         setFilterField(root);
         setSortButton();
+        wasOpenedFromNotification(root);
 
         return root;
     }
@@ -89,9 +94,7 @@ public class ExpensesFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Context context = root.getContext();
-                Intent intent = new Intent(context, ExpenseActivity.class);
-                launcher.launch(intent);
+                launchExpenseActivity(root, new HashMap<>());
             }
         });
     }
@@ -169,8 +172,41 @@ public class ExpensesFragment extends Fragment {
     }
 
     private void sort() {
-        List<ExpenseRecord> freshRecords = getExpenses();
         adapter.refresh();
         adapter.sort(asc, sortOption);
+    }
+
+    private void wasOpenedFromNotification(View root) {
+        FragmentActivity activity = getActivity();
+        Intent intent = activity.getIntent();
+        String guid = intent.getStringExtra("guid");
+        List<ExpenseRecord> expenseRecords = getExpenses();
+        Optional<ExpenseRecord> expenseRecord = expenseRecords.stream()
+                .filter(record -> hasSameGuid(guid, record))
+                .findFirst();
+        if (expenseRecord.isPresent()) {
+            openNotificationExpense(root, expenseRecord);
+        }
+    }
+
+    private void openNotificationExpense(View root, Optional<ExpenseRecord> expenseRecord) {
+        ExpenseRecord record = expenseRecord.get();
+        String json = record.toJson();
+        Map<String, String> extras = new HashMap<String, String>() {{
+            put("record", json);
+        }};
+        launchExpenseActivity(root, extras);
+    }
+
+    private boolean hasSameGuid(String guid, ExpenseRecord record) {
+        String recordGuid = record.getGuid();
+        return recordGuid.equals(guid);
+    }
+
+    private void launchExpenseActivity(View root, Map<String, String> extras) {
+        Context context = root.getContext();
+        Intent intent = new Intent(context, ExpenseActivity.class);
+        extras.forEach(intent::putExtra);
+        launcher.launch(intent);
     }
 }

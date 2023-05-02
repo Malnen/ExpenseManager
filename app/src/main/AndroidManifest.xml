@@ -20,6 +20,9 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+        <receiver
+            android:name=".receivers.NotificationReceiver"
+            android:enabled="true" />
         <activity
             android:name=".MainActivity"
             android:exported="false"

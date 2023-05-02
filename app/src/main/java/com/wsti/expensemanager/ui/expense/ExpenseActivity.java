@@ -25,6 +25,7 @@ import com.wsti.expensemanager.data.enums.ExpensePriority;
 import com.wsti.expensemanager.data.enums.ExpenseType;
 import com.wsti.expensemanager.data.model.ExpenseRecord;
 import com.wsti.expensemanager.data.model.User;
+import com.wsti.expensemanager.services.NotificationService;
 import com.wsti.expensemanager.textWatcher.DecimalInputWatcher;
 
 import java.math.BigDecimal;
@@ -101,6 +102,7 @@ public class ExpenseActivity extends AppCompatActivity {
         LocalDateTime reminderDate = expenseType == ExpenseType.outcome ? getLocalDateTimeValue(R.id.expense_reminder_date) : null;
         ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseType, expenseGuid, currencyValue, date, priority, reminderDate);
         expenseRepository.saveExpenseRecord(record, newRecord, user);
+        manageNotification(newRecord);
     }
 
     private void saveNewRecord() {
@@ -109,7 +111,17 @@ public class ExpenseActivity extends AppCompatActivity {
         BigDecimal currencyValue = getExpenseCurrencyValue();
         LocalDateTime date = getLocalDateTimeValue(R.id.expense_inserted_date);
         LocalDateTime reminderDate = expenseType == ExpenseType.outcome ? getLocalDateTimeValue(R.id.expense_reminder_date) : null;
-        expenseRepository.saveExpenseRecord(expenseNameValue, expenseType, currencyValue, user, date, priority, reminderDate);
+        ExpenseRecord expenseRecord = expenseRepository.saveExpenseRecord(expenseNameValue, expenseType, currencyValue, user, date, priority, reminderDate);
+        manageNotification(expenseRecord);
+    }
+
+    private void manageNotification(ExpenseRecord newRecord) {
+        NotificationService instance = NotificationService.getInstance();
+        if (expenseType == ExpenseType.outcome) {
+            instance.scheduleOutcomeNotification(newRecord, this);
+        } else {
+            instance.cancelNotification(this, newRecord);
+        }
     }
 
     private boolean validateExpenseName() {
@@ -319,7 +331,7 @@ public class ExpenseActivity extends AppCompatActivity {
                             new TimePickerDialog.OnTimeSetListener() {
                                 @Override
                                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                    setDateValue(R.id.expense_inserted_date, year, month, day, hourOfDay, minute);
+                                    setDateValue(R.id.expense_inserted_date, selectedYear, selectedMonth, selectedDay, hourOfDay, minute);
                                 }
                             },
                             hour,
@@ -363,7 +375,7 @@ public class ExpenseActivity extends AppCompatActivity {
                             new TimePickerDialog.OnTimeSetListener() {
                                 @Override
                                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                    setDateValue(R.id.expense_reminder_date, year, month, day, hourOfDay, minute);
+                                    setDateValue(R.id.expense_reminder_date, selectedYear, selectedMonth, selectedDay, hourOfDay, minute);
                                 }
                             },
                             hour,

@@ -98,8 +98,8 @@ public class ExpenseDataSource {
             gsonBuilder.registerTypeAdapter(userExpenseType, new UserExpenseRecordMapAdapter());
             Gson gson = gsonBuilder.create();
 
-            //  return gson.fromJson(json, userExpenseType);
-            List<ExpenseRecord> expenses = getRandomExpenses();
+              return gson.fromJson(json, userExpenseType);
+            /*List<ExpenseRecord> expenses = getRandomExpenses();
             Map<User, List<ExpenseRecord>> result = gson.fromJson(json, userExpenseType);
             Map.Entry<User, List<ExpenseRecord>> first = result.entrySet()
                     .stream()
@@ -107,7 +107,7 @@ public class ExpenseDataSource {
                     .get();
             first.setValue(expenses);
 
-            return result;
+            return result;*/
         }
 
         return new HashMap<>();
