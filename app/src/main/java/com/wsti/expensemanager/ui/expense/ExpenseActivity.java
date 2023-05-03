@@ -1,19 +1,36 @@
 package com.wsti.expensemanager.ui.expense;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -31,15 +48,35 @@ import com.wsti.expensemanager.textWatcher.DecimalInputWatcher;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExpenseActivity extends AppCompatActivity {
     private ExpenseRepository expenseRepository;
     private ExpenseRecord record;
     private ExpenseType expenseType;
     private ExpensePriority priority;
+    private ActivityResultLauncher<String[]> launcher;
+    private List<String> attachments = new ArrayList<>();
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                displayAttachments();
+            } else {
+                Button button = findViewById(R.id.attachment_button);
+                LinearLayout attachments = findViewById(R.id.attachment_list);
+                button.setVisibility(View.GONE);
+                attachments.setVisibility(View.GONE);
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
         super.onCreate(savedInstanceState);
         expenseRepository = ExpenseRepository.getInstance();
         setContentView(R.layout.activity_expense);
@@ -50,6 +87,7 @@ public class ExpenseActivity extends AppCompatActivity {
         setExistingRecordIfCan();
         setDate();
         setReminderDate();
+        setAttachmentButton();
     }
 
     private LocalDateTime getDate() {
@@ -100,7 +138,16 @@ public class ExpenseActivity extends AppCompatActivity {
         BigDecimal currencyValue = getExpenseCurrencyValue();
         LocalDateTime date = getLocalDateTimeValue(R.id.expense_inserted_date);
         LocalDateTime reminderDate = expenseType == ExpenseType.outcome ? getLocalDateTimeValue(R.id.expense_reminder_date) : null;
-        ExpenseRecord newRecord = new ExpenseRecord(expenseName, expenseType, expenseGuid, currencyValue, date, priority, reminderDate);
+        ExpenseRecord newRecord = new ExpenseRecord(
+                expenseName,
+                expenseType,
+                expenseGuid,
+                currencyValue,
+                date,
+                priority,
+                reminderDate,
+                attachments
+        );
         expenseRepository.saveExpenseRecord(record, newRecord, user);
         manageNotification(newRecord);
     }
@@ -111,7 +158,16 @@ public class ExpenseActivity extends AppCompatActivity {
         BigDecimal currencyValue = getExpenseCurrencyValue();
         LocalDateTime date = getLocalDateTimeValue(R.id.expense_inserted_date);
         LocalDateTime reminderDate = expenseType == ExpenseType.outcome ? getLocalDateTimeValue(R.id.expense_reminder_date) : null;
-        ExpenseRecord expenseRecord = expenseRepository.saveExpenseRecord(expenseNameValue, expenseType, currencyValue, user, date, priority, reminderDate);
+        ExpenseRecord expenseRecord = expenseRepository.saveExpenseRecord(
+                expenseNameValue,
+                expenseType,
+                currencyValue,
+                user,
+                date,
+                priority,
+                reminderDate,
+                attachments
+        );
         manageNotification(expenseRecord);
     }
 
@@ -233,6 +289,11 @@ public class ExpenseActivity extends AppCompatActivity {
         } else {
             hidePriority();
             hideReminderDate();
+        }
+
+        attachments = record.getAttachments();
+        if (attachments == null) {
+            attachments = new ArrayList<>();
         }
     }
 
@@ -453,5 +514,117 @@ public class ExpenseActivity extends AppCompatActivity {
             default:
                 return -1;
         }
+    }
+
+    private void setAttachmentButton() {
+        launcher = registerForActivityResult(new ActivityResultContracts.OpenDocument(),
+                result -> {
+                    if (result != null) {
+                        String uri = result.toString();
+                        attachments.add(uri);
+                        ContentResolver contentResolver = getContentResolver();
+                        contentResolver.takePersistableUriPermission(result, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        displayAttachments();
+                    }
+                }
+        );
+        Button button = findViewById(R.id.attachment_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                launcher.launch(new String[]{"application/pdf"});
+            }
+        });
+    }
+
+    private void displayAttachments() {
+        LinearLayout linearLayout = findViewById(R.id.attachment_list);
+        linearLayout.removeAllViews();
+        for (String uri : attachments) {
+            processUri(linearLayout, uri);
+        }
+    }
+
+    private void processUri(LinearLayout linearLayout, String uri) {
+        String name = getFileName(uri);
+        if (name != null) {
+            displayFile(linearLayout, name, uri);
+        }
+    }
+
+    private void displayFile(LinearLayout linearLayout, String name, String uri) {
+        LinearLayout wrapper = new LinearLayout(this);
+        wrapper.setOrientation(LinearLayout.HORIZONTAL);
+        wrapper.setGravity(Gravity.CENTER);
+        TextView textView = new TextView(this);
+        textView.setText(name);
+        textView.setMaxWidth(600);
+        ImageButton delete = getImageButton(uri);
+        ImageButton preview = getPreviewButton(uri);
+        wrapper.addView(textView);
+        wrapper.addView(preview);
+        wrapper.addView(delete);
+        linearLayout.addView(wrapper);
+    }
+
+    private ImageButton getPreviewButton(String uri) {
+        ImageButton preview = new ImageButton(this);
+        preview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Uri correctUri = Uri.parse(uri);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(correctUri);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                try {
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        preview.setImageResource(R.drawable.ic_menu_statistics);
+        preview.setBackgroundColor(Color.TRANSPARENT);
+        preview.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(120, 120);
+        params.leftMargin = 10;
+        preview.setLayoutParams(params);
+
+        return preview;
+    }
+
+    private ImageButton getImageButton(String uri) {
+        ImageButton delete = new ImageButton(this);
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attachments.remove(uri);
+                displayAttachments();
+            }
+        });
+        delete.setImageResource(R.drawable.ic_menu_expenses);
+        delete.setBackgroundColor(Color.TRANSPARENT);
+        delete.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(120, 120);
+        params.leftMargin = 10;
+        delete.setLayoutParams(params);
+
+        return delete;
+    }
+
+    private String getFileName(String attachmentUri) {
+        Uri uri = Uri.parse(attachmentUri);
+        String[] projection = {MediaStore.Images.Media.DISPLAY_NAME};
+        ContentResolver contentResolver = getContentResolver();
+        try (Cursor cursor = contentResolver.query(uri, projection, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int nameIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
+                return cursor.getString(nameIndex);
+            }
+        }
+
+        return null;
     }
 }

@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class ExpenseRecord {
@@ -23,6 +24,7 @@ public class ExpenseRecord {
     private final String guid;
     private final ExpensePriority priority;
     private final LocalDateTime reminderDate;
+    private final List<String> attachments;
 
     public ExpenseRecord(
             String name,
@@ -30,7 +32,8 @@ public class ExpenseRecord {
             BigDecimal currencyValue,
             LocalDateTime insertedDate,
             ExpensePriority priority,
-            LocalDateTime reminderDate
+            LocalDateTime reminderDate,
+            List<String> attachments
     ) {
         this.name = name;
         this.expenseType = expenseType;
@@ -38,6 +41,7 @@ public class ExpenseRecord {
         this.insertedDate = insertedDate;
         this.priority = priority;
         this.reminderDate = reminderDate;
+        this.attachments = attachments;
         guid = UUID.randomUUID().toString();
     }
 
@@ -48,7 +52,8 @@ public class ExpenseRecord {
             BigDecimal currencyValue,
             LocalDateTime insertedDate,
             ExpensePriority priority,
-            LocalDateTime reminderDate
+            LocalDateTime reminderDate,
+            List<String> attachments
     ) {
         this.name = name;
         this.expenseType = expenseType;
@@ -57,6 +62,7 @@ public class ExpenseRecord {
         this.guid = guid;
         this.priority = priority;
         this.reminderDate = reminderDate;
+        this.attachments = attachments;
     }
 
     public static ExpenseRecord fromJson(String json) {
@@ -93,6 +99,10 @@ public class ExpenseRecord {
 
     public LocalDateTime getReminderDate() {
         return reminderDate;
+    }
+
+    public List<String> getAttachments() {
+        return attachments;
     }
 
     public String toJson() {

@@ -56,9 +56,19 @@ public class ExpenseRepository {
             User user,
             LocalDateTime date,
             ExpensePriority priority,
-            LocalDateTime reminderDate
+            LocalDateTime reminderDate,
+            List<String> attachments
     ) {
-        ExpenseRecord record = dataSource.saveExpenseRecord(expenseName, expenseType, currencyValue, user, date, priority, reminderDate);
+        ExpenseRecord record = dataSource.saveExpenseRecord(
+                expenseName,
+                expenseType,
+                currencyValue,
+                user,
+                date,
+                priority,
+                reminderDate,
+                attachments
+        );
         expenses.add(record);
 
         return record;

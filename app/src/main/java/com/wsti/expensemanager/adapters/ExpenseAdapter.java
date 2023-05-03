@@ -76,9 +76,7 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
         int showPriority = priority == ExpensePriority.none ? View.GONE : View.VISIBLE;
         priorityLabel.setVisibility(showPriority);
         priorityView.setVisibility(showPriority);
-        String priorityName = priority.getName();
-        priorityView.setText(priorityName);
-        int priorityColor = getPriorityColor(priority);
+         int priorityColor = getPriorityColor(priority);
         priorityView.setTextColor(priorityColor);
 
         TextView insertedDateView = listItem.findViewById(R.id.expense_item_inserted_date);
@@ -178,8 +176,8 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
         String filterPattern = constraint.toString().toLowerCase().trim();
         for (ExpenseRecord expenseRecord : originalExpenses) {
             String rawName = expenseRecord.getName();
-            String name2 = rawName.toLowerCase();
-            if (name2.contains(filterPattern)) {
+            String name = rawName.toLowerCase();
+            if (name.contains(filterPattern)) {
                 filteredExpenseRecords.add(expenseRecord);
             }
         }
@@ -235,10 +233,10 @@ public class ExpenseAdapter extends ArrayAdapter<ExpenseRecord> implements Filte
     }
 
     private void deleteAndNotify(ExpenseRecord record) {
-        ExpenseRepository repository = ExpenseRepository.getInstance();
         UserRepository userRepository = UserRepository.getInstance();
         User user = userRepository.getUser();
-        repository.deleteExpense(record, user);
+        expenseRepository.deleteExpense(record, user);
+        expenseRecords = expenseRepository.getExpenses();
         notifyDataSetChanged();
     }
 
