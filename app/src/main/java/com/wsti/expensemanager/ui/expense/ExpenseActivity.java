@@ -585,7 +585,7 @@ public class ExpenseActivity extends AppCompatActivity {
                 }
             }
         });
-        preview.setImageResource(R.drawable.ic_menu_statistics);
+        preview.setImageResource(R.drawable.ic_view);
         preview.setBackgroundColor(Color.TRANSPARENT);
         preview.setScaleType(ImageView.ScaleType.FIT_CENTER);
         ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(120, 120);
@@ -604,7 +604,7 @@ public class ExpenseActivity extends AppCompatActivity {
                 displayAttachments();
             }
         });
-        delete.setImageResource(R.drawable.ic_menu_expenses);
+        delete.setImageResource(R.drawable.ic_delete);
         delete.setBackgroundColor(Color.TRANSPARENT);
         delete.setScaleType(ImageView.ScaleType.FIT_CENTER);
         ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(120, 120);
