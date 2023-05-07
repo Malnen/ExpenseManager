@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
@@ -40,6 +41,8 @@ public class RegisterActivity extends AppCompatActivity {
         setPasswordListeners(afterTextChangedListener);
         setEmailListeners(afterTextChangedListener);
         setRegisterButtonListener();
+        ActionBar appBar = getSupportActionBar();
+        appBar.setTitle("Register");
     }
 
     private void init() {

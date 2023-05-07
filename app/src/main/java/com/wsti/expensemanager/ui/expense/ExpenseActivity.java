@@ -532,7 +532,7 @@ public class ExpenseActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                launcher.launch(new String[]{"application/pdf"});
+                launcher.launch(new String[]{"*/*"});
             }
         });
     }
